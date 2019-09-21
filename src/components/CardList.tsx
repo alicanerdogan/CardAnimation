@@ -17,7 +17,10 @@ export const CardListStyle = styled.div`
   }
 `;
 
-const data = new Array(13).fill(Date.now());
+const randData = new Uint32Array(13);
+window.crypto.getRandomValues(randData);
+
+const data = Array.from(randData);
 
 export const CardList: React.FC<ICardListProps> = memo(
   ({  }: ICardListProps) => {
