@@ -1,12 +1,22 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
-import { Hello } from "./components/Hello";
+import styled from "@emotion/styled";
+
 import { GlobalStyles } from "./utils/styles";
+import { CardList } from "components/CardList";
+
+const AppStyle = styled.div`
+  margin: 0 auto;
+  max-width: 1024px;
+  padding: 64px 0;
+`;
 
 const App: React.SFC<{}> = () => {
   return (
     <GlobalStyles>
-      <Hello compiler="TypeScript" framework="React" />
+      <AppStyle>
+        <CardList />
+      </AppStyle>
     </GlobalStyles>
   );
 };

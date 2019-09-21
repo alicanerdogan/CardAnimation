@@ -33,6 +33,7 @@ const globalStyles = css`
     line-height: 1.5;
     text-align: left;
     margin: 0;
+    background: #edf2f7;
   }
 
   button {
