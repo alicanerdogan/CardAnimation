@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 export interface IOverlayProps {
   close: () => void;
   isOpen: boolean;
+  forwardRef: React.MutableRefObject<HTMLDivElement | undefined>;
 }
 
 export const OverlayStyle = styled.div`
@@ -15,14 +16,14 @@ export const OverlayStyle = styled.div`
   pointer-events: none;
 
   background: #edf2f7;
-  transition: opacity 0.5s;
+  /* transition: opacity 0.5s; */
 `;
 
 export const Overlay: React.FC<IOverlayProps> = memo(
-  ({ close, isOpen }: IOverlayProps) => {
+  ({ close, isOpen, forwardRef }: IOverlayProps) => {
     const style: React.CSSProperties = isOpen
-      ? { opacity: 0.8, zIndex: 10, pointerEvents: "all" }
-      : { opacity: 0, zIndex: 10, pointerEvents: "none" };
+      ? { opacity: 0, zIndex: 2, pointerEvents: "all" }
+      : { opacity: 0, zIndex: 2, pointerEvents: "none" };
 
     const onClick = React.useCallback(
       (ev: React.MouseEvent) => {
@@ -33,7 +34,11 @@ export const Overlay: React.FC<IOverlayProps> = memo(
     );
 
     return (
-      <OverlayStyle style={style} onClick={onClick}>
+      <OverlayStyle
+        ref={el => (forwardRef.current = el || undefined)}
+        style={style}
+        onClick={onClick}
+      >
         {}
       </OverlayStyle>
     );

@@ -8,7 +8,7 @@ import { CardList } from "components/CardList";
 const AppStyle = styled.div`
   margin: 0 auto;
   max-width: 1024px;
-  padding: 64px 0;
+  padding: 48px;
 `;
 
 const App: React.SFC<{}> = () => {

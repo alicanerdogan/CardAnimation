@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import styled from "@emotion/styled";
 import { Card, CardStyle } from "./Card";
+import { media } from "utils/styles";
 
 export interface ICardListProps {}
 
@@ -14,6 +15,14 @@ export const CardListStyle = styled.div`
   ${CardStyle} {
     margin: 16px;
     width: calc(${100 / 5}% - 32px);
+
+    ${media.md`
+      width: calc(${100 / 3}% - 32px);
+    `}
+
+    ${media.sm`
+      width: calc(${100 / 2}% - 32px);
+    `}
   }
 `;
 
