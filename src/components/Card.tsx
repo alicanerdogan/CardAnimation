@@ -2,7 +2,6 @@ import React, { memo } from "react";
 import styled from "@emotion/styled";
 import { Spring } from "wobble";
 
-import { Overlay } from "./Overlay";
 import { media } from "utils/styles";
 
 export interface ICardProps {}
@@ -11,19 +10,53 @@ const animation = new Spring({
   fromValue: 0,
   toValue: 100,
   stiffness: 250,
-  damping: 30
+  damping: 100
 });
 
 const PAD = 48;
+
+const OverlayStyle = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+
+  background: #edf2f7;
+  transition: opacity 0.5s;
+  will-change: opacity;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const CollapsedCardContent = styled.div`
+  height: 100%;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+`;
+
+const CardDetails = styled.div`
+  background: #fff;
+  padding: 16px;
+`;
+
+const ExtendedCardContent = styled.div`
+  opacity: 0;
+  will-change: opacity;
+`;
 
 const CardContent = styled.div`
   position: relative;
   height: 100%;
   width: 100%;
-  background: #fff;
-  border-radius: 3px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   will-change: transform;
 
@@ -43,7 +76,10 @@ const CardContainer = styled.div`
   left: 0;
   bottom: 0;
   right: 0;
-  pointer-events: none;
+
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 export const CardStyle = styled.div`
@@ -58,11 +94,6 @@ export const CardStyle = styled.div`
   ${media.sm`
     height: 160px;
   `}
-
-  &:hover {
-    cursor: pointer;
-    /* transform: scale(1.1); */
-  }
 `;
 
 function recursiveAnimate(
@@ -108,29 +139,49 @@ function getDimensions(
 }
 
 export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
+  const cardContainerRef = React.useRef<HTMLDivElement>();
   const cardContentRef = React.useRef<HTMLDivElement>();
+  const collapsedCardContentRef = React.useRef<HTMLDivElement>();
+  const extendedCardContentRef = React.useRef<HTMLDivElement>();
   const overlayRef = React.useRef<HTMLDivElement>();
   const cardRef = React.useRef<HTMLDivElement>();
 
-  const [expanded, setExpanded] = React.useState(false);
-
   const onClick = React.useCallback(() => {
-    setExpanded(true);
+    if (animation.isAnimating) {
+      return;
+    }
     animation.start();
 
-    if (!cardContentRef.current || !overlayRef.current || !cardRef.current) {
+    if (
+      !cardContentRef.current ||
+      !overlayRef.current ||
+      !cardRef.current ||
+      !extendedCardContentRef.current ||
+      !collapsedCardContentRef.current ||
+      !cardContainerRef.current
+    ) {
       return;
     }
 
+    const cardContainerEl = cardContainerRef.current;
     const cardContentEl = cardContentRef.current;
+    const overlayEl = overlayRef.current;
+    const collapsedCardContentEl = collapsedCardContentRef.current;
+    const extendedCardContentEl = extendedCardContentRef.current;
     const dimensions = getDimensions(overlayRef.current, cardRef.current);
 
-    cardContentEl.style.width = `${dimensions.width}px`;
-    cardContentEl.style.height = `${dimensions.height}px`;
+    cardContainerEl.style.padding = `${PAD}px`;
+    cardContainerEl.style.zIndex = "3";
+    cardContainerEl.style.position = "fixed";
+    cardContainerEl.style.pointerEvents = "none";
+    overlayEl.style.pointerEvents = "all";
+    overlayEl.style.opacity = "0.8";
+    collapsedCardContentEl.style.height = `${dimensions.height}px`;
     cardContentEl.style.transformOrigin = "top left";
     cardContentEl.style.transform = `translateY(${
       dimensions.translateY
     }px) translateX(${dimensions.translateX}px) scale(${1 / dimensions.scale})`;
+    extendedCardContentEl.style.opacity = "0";
 
     recursiveAnimate(animation, val => {
       const coeff = (100 - val) / 100;
@@ -140,22 +191,37 @@ export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
       const translateY = coeff * dimensions.translateY;
       const scale = scaleCoeff / dimensions.scale;
 
-      // console.log({ translateX, translateY, scale });
-
       cardContentEl.style.transform = `translateY(${translateY}px) translateX(${translateX}px) scale(${scale})`;
+      extendedCardContentEl.style.opacity = (val / 100).toString();
     });
-  }, [setExpanded]);
+  }, []);
 
   const collapse = React.useCallback(() => {
-    animation.stop();
+    if (animation.isAnimating) {
+      return;
+    }
     animation.start();
 
-    if (!cardContentRef.current || !overlayRef.current || !cardRef.current) {
+    if (
+      !cardContentRef.current ||
+      !overlayRef.current ||
+      !cardRef.current ||
+      !extendedCardContentRef.current ||
+      !collapsedCardContentRef.current ||
+      !cardContainerRef.current
+    ) {
       return;
     }
 
+    const cardContainerEl = cardContainerRef.current;
     const cardContentEl = cardContentRef.current;
+    const overlayEl = overlayRef.current;
+    const extendedCardContentEl = extendedCardContentRef.current;
+    const collapsedCardContentEl = collapsedCardContentRef.current;
     const dimensions = getDimensions(overlayRef.current, cardRef.current);
+
+    overlayEl.style.pointerEvents = "";
+    overlayEl.style.opacity = "";
 
     recursiveAnimate(animation, (val, isAtRest) => {
       if (isAtRest) {
@@ -163,7 +229,12 @@ export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
         cardContentEl.style.transform = "";
         cardContentEl.style.width = "";
         cardContentEl.style.height = "";
-        setExpanded(false);
+        collapsedCardContentEl.style.height = "";
+        extendedCardContentEl.style.opacity = "";
+        cardContainerEl.style.padding = "";
+        cardContainerEl.style.zIndex = "";
+        cardContainerEl.style.position = "";
+        cardContainerEl.style.pointerEvents = "";
         return;
       }
 
@@ -174,25 +245,42 @@ export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
       const translateY = coeff * dimensions.translateY;
       const scale = scaleCoeff / dimensions.scale;
 
-      // console.log({ translateX, translateY, scale });
-
       cardContentEl.style.transform = `translateY(${translateY}px) translateX(${translateX}px) scale(${scale})`;
+      extendedCardContentEl.style.opacity = ((100 - val) / 100).toString();
     });
-  }, [setExpanded]);
+  }, []);
 
-  const cardContainerStyle: React.CSSProperties = expanded
-    ? { position: "fixed", zIndex: 3, padding: `${PAD}px` }
-    : {};
+  const onOverlayClick = React.useCallback(
+    (ev: React.MouseEvent) => {
+      ev.stopPropagation();
+      collapse();
+    },
+    [collapse]
+  );
 
   return (
     <CardStyle
       onClick={onClick}
       ref={el => (cardRef.current = el || undefined)}
     >
-      <Overlay close={collapse} isOpen={expanded} forwardRef={overlayRef} />
-      <CardContainer style={cardContainerStyle}>
+      <OverlayStyle
+        onClick={onOverlayClick}
+        ref={el => (overlayRef.current = el || undefined)}
+      />
+      <CardContainer ref={el => (cardContainerRef.current = el || undefined)}>
         <CardContent ref={el => (cardContentRef.current = el || undefined)}>
-          <img src={"http://loremflickr.com/300/400/food"} alt="food" />
+          <CollapsedCardContent
+            ref={el => (collapsedCardContentRef.current = el || undefined)}
+          >
+            <img src={"http://loremflickr.com/300/400/food"} alt="food" />
+          </CollapsedCardContent>
+          <ExtendedCardContent
+            ref={el => (extendedCardContentRef.current = el || undefined)}
+          >
+            <CardDetails>
+              <p>{"Test"}</p>
+            </CardDetails>
+          </ExtendedCardContent>
         </CardContent>
       </CardContainer>
     </CardStyle>
