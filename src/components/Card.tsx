@@ -13,7 +13,7 @@ const animation = new Spring({
   damping: 100
 });
 
-const PAD = 48;
+const PAD = 0;
 
 const OverlayStyle = styled.div`
   position: fixed;

@@ -14,7 +14,7 @@ module.exports = {
     path: __dirname + "/dist",
     publicPath: "/"
   },
-  devtool: "cheap-module-source-map",
+  devtool: isProduction ? "source-map" : "cheap-module-source-map",
   devServer: {
     host: "0.0.0.0",
     contentBase: "./dist",
