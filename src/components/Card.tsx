@@ -9,8 +9,8 @@ export interface ICardProps {}
 const animation = new Spring({
   fromValue: 0,
   toValue: 100,
-  stiffness: 250,
-  damping: 100
+  stiffness: 350,
+  damping: 30
 });
 
 const PAD = 0;
@@ -122,16 +122,25 @@ function getDimensions(
   const overlayRect = overlay.getBoundingClientRect();
   const rect = card.getBoundingClientRect();
 
-  const width = overlayRect.width - PAD * 2;
-  const scale = width / rect.width;
-  const height = scale * rect.height;
+  const w1 = rect.width;
+  const h1 = rect.height;
+  const x1 = (rect as any).x;
+  const y1 = (rect as any).y;
 
-  const translateY = (rect as any).y - PAD;
-  const translateX = (rect as any).x - PAD;
+  const w2 = overlayRect.width - PAD * 2;
+  const scale = w2 / w1;
+  const h2 = overlayRect.height - PAD * 2;
+  const x2 = (overlayRect as any).x + PAD;
+  const y2 = (overlayRect as any).y + PAD;
+  const x2_ = x2 + (w2 / 2) * (1 - 1 / scale);
+  const y2_ = y2 + (h2 / 2) * (1 - 1 / scale);
+
+  const translateY = y1 - y2_;
+  const translateX = x1 - x2_;
 
   return {
-    width,
-    height,
+    width: w2,
+    height: scale * h1,
     scale,
     translateX,
     translateY
@@ -177,7 +186,6 @@ export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
     overlayEl.style.pointerEvents = "all";
     overlayEl.style.opacity = "0.8";
     collapsedCardContentEl.style.height = `${dimensions.height}px`;
-    cardContentEl.style.transformOrigin = "top left";
     cardContentEl.style.transform = `translateY(${
       dimensions.translateY
     }px) translateX(${dimensions.translateX}px) scale(${1 / dimensions.scale})`;
@@ -225,7 +233,6 @@ export const Card: React.FC<ICardProps> = memo(({  }: ICardProps) => {
 
     recursiveAnimate(animation, (val, isAtRest) => {
       if (isAtRest) {
-        cardContentEl.style.transformOrigin = "top left";
         cardContentEl.style.transform = "";
         cardContentEl.style.width = "";
         cardContentEl.style.height = "";
