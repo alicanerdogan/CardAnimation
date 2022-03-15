@@ -44,7 +44,7 @@
     "@emotion/styled": "^10.0.17",
     "core-js": "3.2.1",
     "framer-motion": "^1.6.7",
-    "lodash-es": "^4.17.15",
+    "lodash-es": "^4.17.21",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-hot-loader": "^4.12.13",
